@@ -11,6 +11,9 @@ import re
 USER_LOGIN = '<YOUR LOGIN>'
 USER_PASSWORD = '<YOUR_PASSWORD>'
 
+# to randomize time before scrolling posts
+def calc_cooldown(left=1.5, right=3.0):
+    return np.random.uniform(left, right)
 
 def get_and_print_profile_info(driver, profile_url):
     driver.get(profile_url)        # this will open the link
@@ -45,6 +48,7 @@ def get_and_print_profile_info(driver, profile_url):
 
     POSTS_URL_SUFFIX = 'recent-activity/all/'
 
+    # to provide extra time for the webpage to load
     time.sleep(0.5)
 
     # Get current url from browser
@@ -58,8 +62,8 @@ def get_and_print_profile_info(driver, profile_url):
 def get_and_print_user_posts(driver, posts_url):
     driver.get(posts_url)
 
-    #Simulate scrolling to capture all posts
-    SCROLL_PAUSE_TIME = 1.5
+#     #Simulate scrolling to capture all posts
+#     SCROLL_PAUSE_TIME = 1.5
 
     # Get scroll height
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -72,13 +76,21 @@ def get_and_print_user_posts(driver, posts_url):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
         # Wait to load page
-        time.sleep(SCROLL_PAUSE_TIME)
+#         time.sleep(SCROLL_PAUSE_TIME)
+        time.sleep(calc_cooldown())
 
         # Calculate new scroll height and compare with last scroll height
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == last_height:
             break
         last_height = new_height
+        
+        # Wait to try to click on the show more results button
+        time.sleep(calc_cooldown())
+
+        # Try clicking on the show more results button
+        try: driver.find_element(By.XPATH, "//button[@class='artdeco-button artdeco-button--muted artdeco-button--1 artdeco-button--full artdeco-button--secondary ember-view scaffold-finite-scroll__load-button']").click()
+        except: continue
 
     # Parsing posts
     src = driver.page_source
@@ -92,7 +104,8 @@ def get_and_print_user_posts(driver, posts_url):
 
     print(f'Number of posts: {len(posts)}')
     for post_src in posts:
-        post_text_div = post_src.find('div', {'class': 'feed-shared-update-v2__description-wrapper mr2'})
+#         post_text_div = post_src.find('div', {'class': 'feed-shared-update-v2__description-wrapper mr2'})
+        post_text_div = post_src.find('div', {'class': re.compile("^feed-shared-update-v2__description-wrapper")})
 
         # if post_text_div is None:
         #     print(post_src)
