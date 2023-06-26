@@ -59,7 +59,19 @@ def get_and_print_profile_info(driver, profile_url):
     # Parse posts
     get_and_print_user_posts(driver, cur_profile_url + POSTS_URL_SUFFIX)
 
+def grab_reactions(post_src):
+    reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
 
+    # If number of reactions is written as text
+    # It has different class name
+    if reaction_cnt is None:
+        reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__social-proof-text'})
+
+    if reaction_cnt is not None:
+        reaction_cnt = reaction_cnt.get_text().strip()
+    
+    return reaction_cnt
+    
 def get_and_print_user_posts(driver, posts_url):
     driver.get(posts_url)
 
@@ -102,40 +114,56 @@ def get_and_print_user_posts(driver, posts_url):
 
     posts = soup.find_all('li', class_='profile-creator-shared-feed-update__container')
     # print(posts)
+    
+    post_texts = []
+    post_reactions = []
 
     print(f'Number of posts: {len(posts)}')
+#     for post_src in posts:
+# #         post_text_div = post_src.find('div', {'class': 'feed-shared-update-v2__description-wrapper mr2'})
+#         post_text_div = post_src.find('div', {'class': re.compile("^feed-shared-update-v2__description-wrapper")})
+
+#         # if post_text_div is None:
+#         #     print(post_src)
+
+#         if post_text_div is not None:
+#             post_text = post_text_div.find('span', {'dir': 'ltr'})
+#         else:
+#             post_text = None
+
+#         # If post text is found
+#         if post_text is not None:
+#             post_text = post_text.get_text().strip()
+#             print(f'Post text: {post_text}')
+
+#         reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
+
+#         # If number of reactions is written as text
+#         # It has different class name
+#         if reaction_cnt is None:
+#             reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__social-proof-text'})
+
+#         if reaction_cnt is not None:
+#             reaction_cnt = reaction_cnt.get_text().strip()
+#             print(f'Reactions: {reaction_cnt}')
+
+#     return
+
     for post_src in posts:
-#         post_text_div = post_src.find('div', {'class': 'feed-shared-update-v2__description-wrapper mr2'})
-        post_text_div = post_src.find('div', {'class': re.compile("^feed-shared-update-v2__description-wrapper")})
-
-        # if post_text_div is None:
-        #     print(post_src)
-
-        if post_text_div is not None:
-            post_text = post_text_div.find('span', {'dir': 'ltr'})
-        else:
-            post_text = None
-
-        # If post text is found
-        if post_text is not None:
-            post_text = post_text.get_text().strip()
-            print(f'Post text: {post_text}')
-
-        reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
-
-        # If number of reactions is written as text
-        # It has different class name
-        if reaction_cnt is None:
-            reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__social-proof-text'})
-
-        if reaction_cnt is not None:
-            reaction_cnt = reaction_cnt.get_text().strip()
-            print(f'Reactions: {reaction_cnt}')
-
-    return
-
-
-
+        texts = post_src.find_all("span", {"dir":"ltr"})
+        if len(texts) > 1 and texts[0].get_text().strip() == name:
+            try: 
+                if texts[1].parent['class'] == ['break-words']:
+                    post_texts.append(texts[1].get_text().strip())
+                    post_reactions.append(grab_reactions(post_src))
+            except: 
+                try: 
+                    if texts[1].parent.parent['class'] == ['break-words']:
+                        post_texts.append(texts[1].get_text().strip())
+                        post_reactions.append(grab_reactions(post_src))
+                except: pass
+                
+    return post_texts, post_reactions
 
 if __name__ == '__main__':
     # start Chrome browser
