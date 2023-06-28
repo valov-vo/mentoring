@@ -1,9 +1,9 @@
-
+import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 import time
@@ -16,9 +16,11 @@ USER_PASSWORD = '<YOUR_PASSWORD>'
 def calc_cooldown(left=1.5, right=3.0):
     return np.random.uniform(left, right)
 
-def get_and_print_profile_info(driver, profile_url):
-    driver.get(profile_url)        # this will open the link
-
+def get_profile_info(driver, profile_url):
+    driver.get(profile_url)     # this will open the link
+    
+    time.sleep(4.5) # extratime for loading
+    
     # Extracting data from page with BeautifulSoup
     src = driver.page_source
 
@@ -29,35 +31,36 @@ def get_and_print_profile_info(driver, profile_url):
     # that contains the name, company name, and the location
     intro = soup.find('div', {'class': 'pv-text-details__left-panel'})
 
-    #print(intro)
-
     # In case of an error, try changing the tags used here.
     name_loc = intro.find("h1")
 
     # Extracting the Name
-    name = name_loc.get_text().strip()
-    # strip() is used to remove any extra blank spaces
+    name = name_loc.get_text().strip() # strip() is used to remove any extra blank spaces
+    
+    # find work experience and scroll to it
+    experience = driver.find_element(By.CLASS_NAME, 'pvs-list__outer-container')
+    actions = ActionChains(driver)
+    actions.scroll_to_element(experience).scroll_by_amount(0, 600).perform()
+    
+    # create variable and find experience
+    exp = soup.find_all(lambda tag: tag.name == 'span' and
+                                   tag.get('class') == ['visually-hidden'])
 
-    works_at_loc = intro.find("div", {'class': 'text-body-medium'})
+    # convert experience to text
+    exp_list = []
+    for el in exp:
+        exp_list.append(el.get_text())
 
-    # this gives us the HTML of the tag in which the Company Name is present
-    # Extracting the Company Name
-    works_at = works_at_loc.get_text().strip()
+    # clean data from unnecessary information ('None' like a flag for deleting)   
+    exp_list = exp_list[exp_list.index('Опыт работы')+1:exp_list.index('Образование')]
+    exp_list = list(map(lambda x: None if x.__contains__(',') or x.__contains__('Навыки') else x, exp_list))
+    exp_list = list(map(lambda x: None if x == None or len(x) > 100 else x, exp_list))
 
-    print("Name -->",  name,
-          "\nWorks At -->", works_at)
-
-    POSTS_URL_SUFFIX = 'recent-activity/all/'
-
-    # to provide extra time for the webpage to load
-    time.sleep(0.5)
-
-    # Get current url from browser
-    cur_profile_url = driver.current_url
-    print(cur_profile_url)
-
-    # Parse posts
-    get_and_print_user_posts(driver, cur_profile_url + POSTS_URL_SUFFIX)
+    # create list with first 3 rows (last work), but we can change length
+    exp_list = [i for i in exp1_list if i != None]
+    # exp1_list = exp1_list[:3]  # uncomment this row to reduce exp1
+    
+    return [profile_url, name, exp1_list]
 
 def grab_reactions(post_src):
     reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
@@ -234,9 +237,14 @@ if __name__ == '__main__':
     print(profile_urls)
 
     # Parse profile urls
-    for profile_url in profile_urls:
-        get_and_print_profile_info(driver, profile_url)
+    profile_info = []
+    
+    for profile_url in profile_list:
+        profile_data = get_profile_info(driver, profile_url)
+        profile_info.append(profile_data)
         time.sleep(2)
-
+        
+    profile_info = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list'])
+    
     # close the Chrome browser
     driver.quit()
