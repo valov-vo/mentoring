@@ -9,12 +9,14 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import time
 import re
 
-USER_LOGIN = ''
-USER_PASSWORD = ''
+USER_LOGIN = '<YOUR LOGIN>'
+USER_PASSWORD = '<YOUR PASSWORD>'
+JOB_TITLE = '<JOB TITLE YOU PARSE>'
 POSTS_URL_SUFFIX = 'recent-activity/all/'
-NUM_PAGES_TO_PARSE = 40
-NUM_SCROLLS = 5
-JOB_TITLE = 'Middle Developer'
+POSTS_URL_PREFIX = 'https://www.linkedin.com/feed/update/'
+NUM_PAGES_TO_PARSE = 20
+NUM_SCROLLS = 4
+
 
 def gen_search_query(JOB_TITLE):
     return f'https://www.linkedin.com/search/results/people/?currentCompany=%5B%2212611%22%2C%2225880%22%2C%2210718%22%2C%2277009034%22%2C%22579461%22%2C%2276092120%22%2C%2219201%22%2C%226132%22%2C%228979%22%2C%22111769%22%2C%222223110%22%2C%2232642%22%2C%223275554%22%2C%2235639643%22%2C%2237181095%22%2C%2277366986%22%2C%2280856181%22%2C%228699%22%2C%2297007097%22%2C%2297279296%22%2C%2297345934%22%5D&keywords={JOB_TITLE}&origin=FACETED_SEARCH&sid=_yf'
@@ -91,7 +93,19 @@ def grab_reactions(post_src):
         reaction_cnt = reaction_cnt.get_text().strip()
     
     return reaction_cnt
+
+def grab_comments(post_src):
+    comment_cnt = post_src.find(text=re.compile('[^"]*?комментар[^"]*?'))
+
+    # If number of reactions is written as text
+    # It has different class name
+    if comment_cnt is None:
+        return 0
+    else:
+        comment_cnt = comment_cnt.get_text().strip()
     
+    return comment_cnt
+
 def get_and_print_user_posts(driver, posts_url):
     driver.get(posts_url)
 
@@ -138,6 +152,8 @@ def get_and_print_user_posts(driver, posts_url):
     
     post_texts = []
     post_reactions = []
+    post_comments = []
+    post_urls = []
 
 #     print(f'Number of posts: {len(posts)}')
 #     for post_src in posts:
@@ -171,20 +187,20 @@ def get_and_print_user_posts(driver, posts_url):
 #     return
 
     for post_src in posts:
+        grab = False
         texts = post_src.find_all("span", {"dir":"ltr"})
-        if len(texts) > 1 and texts[0].get_text().strip() == name:
-            try: 
-                if texts[1].parent['class'] == ['break-words']:
-                    post_texts.append(texts[1].get_text().strip())
-                    post_reactions.append(grab_reactions(post_src))
+        if len(texts) > 1 and texts[0].get_text().strip() == name and texts[1] is not None:
+            try: grab = texts[1].parent['class'] == ['break-words']
             except: 
-                try: 
-                    if texts[1].parent.parent['class'] == ['break-words']:
-                        post_texts.append(texts[1].get_text().strip())
-                        post_reactions.append(grab_reactions(post_src))
+                try: grab = texts[1].parent.parent['class'] == ['break-words']
                 except: pass
+        if grab:
+            post_urls.append(POSTS_URL_PREFIX + post_src.find('div', {'data-urn': re.compile('^urn:li:activity:')})['data-urn']) 
+            post_texts.append(texts[1].get_text().strip())
+            post_reactions.append(grab_reactions(post_src))
+            post_comments.append(grab_comments(post_src))
                 
-    return [post_texts, post_reactions]
+    return [post_texts, post_reactions, post_comments, post_urls]
 
 if __name__ == '__main__':
     # start Chrome browser
@@ -233,8 +249,6 @@ if __name__ == '__main__':
 
     profile_urls = []
 
-    NUM_PAGES_TO_PARSE = 1
-
     # Iterate over pages of search results
     # to collect profile urls
     for i in range(NUM_PAGES_TO_PARSE):
@@ -267,13 +281,12 @@ if __name__ == '__main__':
         profile_data_2 = get_and_print_user_posts(driver, cur_profile_url + POSTS_URL_SUFFIX)
         profile_info.append(profile_data + profile_data_2)
         if i % 20 == 0:
-            profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions'])
+            profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions', 'comments', 'post_url'])
             profile_info_df.to_csv('profile_info.csv')
             
-        time.sleep(2)
+        time.sleep(2)    
         
-        
-    profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions'])
+    profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions', 'comments', 'post_url'])
     profile_info_df.to_csv('profile_info.csv')
     
     # close the Chrome browser
