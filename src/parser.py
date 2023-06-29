@@ -227,6 +227,8 @@ if __name__ == '__main__':
             if 'linkedin.com/in' in href:
                 profile_urls.append(href)
 
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(5)
         next_button = driver.find_element(By.CLASS_NAME,'artdeco-pagination__button--next')
         next_button.click()
         time.sleep(2)
