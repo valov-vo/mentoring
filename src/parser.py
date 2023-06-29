@@ -9,8 +9,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import time
 import re
 
-USER_LOGIN = 'vavalov@yandex.ru'
-USER_PASSWORD = 'HHAuBg1ht'
+USER_LOGIN = ''
+USER_PASSWORD = ''
 POSTS_URL_SUFFIX = 'recent-activity/all/'
 NUM_PAGES_TO_PARSE = 40
 NUM_SCROLLS = 5
