@@ -45,6 +45,12 @@ def get_profile_info(driver, profile_url):
     # Extracting the Name
     name = name_loc.get_text().strip() # strip() is used to remove any extra blank spaces
     
+    works_at_loc = intro.find("div", {'class': 'text-body-medium'})
+
+    # this gives us the HTML of the tag in which the Company Name is present
+    # Extracting the Company Name
+    works_at = works_at_loc.get_text().strip()
+    
     # find work experience and scroll to it
     experience = driver.find_element(By.CLASS_NAME, 'pvs-list__outer-container')
     actions = ActionChains(driver)
@@ -66,9 +72,9 @@ def get_profile_info(driver, profile_url):
 
     # create list with first 3 rows (last work), but we can change length
     exp_list = [i for i in exp_list if i != None]
-    # exp1_list = exp1_list[:3]  # uncomment this row to reduce exp1
+    # exp_list = exp_list[:3]  # uncomment this row to reduce exp1
     
-    return [cur_profile_url, name, exp_list]
+    return [cur_profile_url, name, works_at, exp_list]
 
 def grab_reactions(post_src):
     reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
@@ -256,13 +262,13 @@ if __name__ == '__main__':
         profile_data_2 = get_and_print_user_posts(driver, cur_profile_url + POSTS_URL_SUFFIX)
         profile_info.append(profile_data + profile_data_2)
         if i % 20 == 0:
-            profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list', 'posts', 'reactions'])
+            profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions'])
             profile_info_df.to_csv('profile_info.csv')
             
         time.sleep(2)
         
         
-    profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list', 'posts', 'reactions'])
+    profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'works_at', 'exp_list', 'posts', 'reactions'])
     profile_info_df.to_csv('profile_info.csv')
     
     # close the Chrome browser
