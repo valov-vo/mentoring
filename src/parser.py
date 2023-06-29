@@ -14,7 +14,10 @@ USER_PASSWORD = '<YOUR PASSWORD>'
 POSTS_URL_SUFFIX = 'recent-activity/all/'
 NUM_PAGES_TO_PARSE = 40
 NUM_SCROLLS = 5
-SEARCH_QUERY = '<YOUR SEARCH QUERY>'
+JOB_TITLE = '<JOB TITLE NAME TO PARSE>'
+
+def gen_search_query(JOB_TITLE):
+    return f'https://www.linkedin.com/search/results/people/?currentCompany=%5B%2212611%22%2C%2225880%22%2C%2210718%22%2C%2277009034%22%2C%22579461%22%2C%2276092120%22%2C%2219201%22%2C%226132%22%2C%228979%22%2C%22111769%22%2C%222223110%22%2C%2232642%22%2C%223275554%22%2C%2235639643%22%2C%2237181095%22%2C%2277366986%22%2C%2280856181%22%2C%228699%22%2C%2297007097%22%2C%2297279296%22%2C%2297345934%22%5D&keywords={JOB_TITLE}&origin=FACETED_SEARCH&sid=_yf'
 
 # to randomize time before scrolling posts
 def calc_cooldown(left=1.5, right=3.0):
@@ -217,7 +220,7 @@ if __name__ == '__main__':
     # exit()
 
     # Open search page
-    driver.get(SEARCH_QUERY)
+    driver.get(gen_search_query(JOB_TITLE))
 
     profile_urls = []
 
