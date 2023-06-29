@@ -10,7 +10,11 @@ import time
 import re
 
 USER_LOGIN = '<YOUR LOGIN>'
-USER_PASSWORD = '<YOUR_PASSWORD>'
+USER_PASSWORD = '<YOUR PASSWORD>'
+POSTS_URL_SUFFIX = 'recent-activity/all/'
+NUM_PAGES_TO_PARSE = 40
+NUM_SCROLLS = 5
+SEARCH_QUERY = '<YOUR SEARCH QUERY>'
 
 # to randomize time before scrolling posts
 def calc_cooldown(left=1.5, right=3.0):
@@ -22,6 +26,7 @@ def get_profile_info(driver, profile_url):
     time.sleep(4.5) # extratime for loading
     
     # Extracting data from page with BeautifulSoup
+    cur_profile_url = driver.current_url
     src = driver.page_source
 
     # Now using beautiful soup
@@ -57,10 +62,10 @@ def get_profile_info(driver, profile_url):
     exp_list = list(map(lambda x: None if x == None or len(x) > 100 else x, exp_list))
 
     # create list with first 3 rows (last work), but we can change length
-    exp_list = [i for i in exp1_list if i != None]
+    exp_list = [i for i in exp_list if i != None]
     # exp1_list = exp1_list[:3]  # uncomment this row to reduce exp1
     
-    return [profile_url, name, exp1_list]
+    return [cur_profile_url, name, exp_list]
 
 def grab_reactions(post_src):
     reaction_cnt = post_src.find('span', {'class': 'social-details-social-counts__reactions-count'})
@@ -85,7 +90,7 @@ def get_and_print_user_posts(driver, posts_url):
     last_height = driver.execute_script("return document.body.scrollHeight")
 
     # We can adjust this number to get more posts
-    NUM_SCROLLS = 5
+#     NUM_SCROLLS = 1
 
     for i in range(NUM_SCROLLS):
         # Scroll down to bottom
@@ -114,14 +119,15 @@ def get_and_print_user_posts(driver, posts_url):
     # Now using beautiful soup
     soup = BeautifulSoup(src, 'lxml')
     # soup.prettify()
-
+    
+    name = soup.find('h3', class_='single-line-truncate t-16 t-black t-bold mt2').get_text().strip()
     posts = soup.find_all('li', class_='profile-creator-shared-feed-update__container')
     # print(posts)
     
     post_texts = []
     post_reactions = []
 
-    print(f'Number of posts: {len(posts)}')
+#     print(f'Number of posts: {len(posts)}')
 #     for post_src in posts:
 # #         post_text_div = post_src.find('div', {'class': 'feed-shared-update-v2__description-wrapper mr2'})
 #         post_text_div = post_src.find('div', {'class': re.compile("^feed-shared-update-v2__description-wrapper")})
@@ -166,7 +172,7 @@ def get_and_print_user_posts(driver, posts_url):
                         post_reactions.append(grab_reactions(post_src))
                 except: pass
                 
-    return post_texts, post_reactions
+    return [post_texts, post_reactions]
 
 if __name__ == '__main__':
     # start Chrome browser
@@ -211,11 +217,11 @@ if __name__ == '__main__':
     # exit()
 
     # Open search page
-    driver.get('https://www.linkedin.com/search/results/people/?keywords=data%20scientist&origin=CLUSTER_EXPANSION&sid=1gy')
+    driver.get(SEARCH_QUERY)
 
     profile_urls = []
 
-    NUM_PAGES_TO_PARSE = 12
+#     NUM_PAGES_TO_PARSE = 1
 
     # Iterate over pages of search results
     # to collect profile urls
@@ -236,17 +242,25 @@ if __name__ == '__main__':
 
     profile_urls = list(set(profile_urls))
 
-    print(profile_urls)
+#     print(profile_urls)
 
     # Parse profile urls
     profile_info = []
     
-    for profile_url in profile_list:
+    for i, profile_url in enumerate(profile_urls, start = 1):
         profile_data = get_profile_info(driver, profile_url)
-        profile_info.append(profile_data)
+        cur_profile_url = driver.current_url
+        profile_data_2 = get_and_print_user_posts(driver, cur_profile_url + POSTS_URL_SUFFIX)
+        profile_info.append(profile_data + profile_data_2)
+        if i % 20 == 0:
+            profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list', 'posts', 'reactions'])
+            profile_info_df.to_csv('profile_info.csv')
+            
         time.sleep(2)
         
-    profile_info = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list'])
+        
+    profile_info_df = pd.DataFrame(profile_info, columns=['profile_url', 'name', 'exp1_list', 'posts', 'reactions'])
+    profile_info_df.to_csv('profile_info.csv')
     
     # close the Chrome browser
     driver.quit()
