@@ -9,12 +9,12 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import time
 import re
 
-USER_LOGIN = '<YOUR LOGIN>'
-USER_PASSWORD = '<YOUR PASSWORD>'
+USER_LOGIN = 'vavalov@yandex.ru'
+USER_PASSWORD = 'HHAuBg1ht'
 POSTS_URL_SUFFIX = 'recent-activity/all/'
 NUM_PAGES_TO_PARSE = 40
 NUM_SCROLLS = 5
-JOB_TITLE = '<JOB TITLE NAME TO PARSE>'
+JOB_TITLE = 'Middle Developer'
 
 def gen_search_query(JOB_TITLE):
     return f'https://www.linkedin.com/search/results/people/?currentCompany=%5B%2212611%22%2C%2225880%22%2C%2210718%22%2C%2277009034%22%2C%22579461%22%2C%2276092120%22%2C%2219201%22%2C%226132%22%2C%228979%22%2C%22111769%22%2C%222223110%22%2C%2232642%22%2C%223275554%22%2C%2235639643%22%2C%2237181095%22%2C%2277366986%22%2C%2280856181%22%2C%228699%22%2C%2297007097%22%2C%2297279296%22%2C%2297345934%22%5D&keywords={JOB_TITLE}&origin=FACETED_SEARCH&sid=_yf'
@@ -65,10 +65,13 @@ def get_profile_info(driver, profile_url):
     for el in exp:
         exp_list.append(el.get_text())
 
-    # clean data from unnecessary information ('None' like a flag for deleting)   
-    exp_list = exp_list[exp_list.index('Опыт работы')+1:exp_list.index('Образование')]
-    exp_list = list(map(lambda x: None if x.__contains__(',') or x.__contains__('Навыки') else x, exp_list))
-    exp_list = list(map(lambda x: None if x == None or len(x) > 100 else x, exp_list))
+    
+    try:# clean data from unnecessary information ('None' like a flag for deleting)   
+        exp_list = exp_list[exp_list.index('Опыт работы')+1:exp_list.index('Образование')]
+        exp_list = list(map(lambda x: None if x.__contains__(',') or x.__contains__('Навыки') else x, exp_list))
+        exp_list = list(map(lambda x: None if x == None or len(x) > 100 else x, exp_list))
+    except: 
+        exp_list = ['experience parsing error']
 
     # create list with first 3 rows (last work), but we can change length
     exp_list = [i for i in exp_list if i != None]
@@ -230,7 +233,7 @@ if __name__ == '__main__':
 
     profile_urls = []
 
-#     NUM_PAGES_TO_PARSE = 1
+    NUM_PAGES_TO_PARSE = 1
 
     # Iterate over pages of search results
     # to collect profile urls
@@ -250,6 +253,8 @@ if __name__ == '__main__':
 
 
     profile_urls = list(set(profile_urls))
+
+    pd.Series(profile_urls).to_csv(f'{JOB_TITLE}_links.csv')
 
 #     print(profile_urls)
 
