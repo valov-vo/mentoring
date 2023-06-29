@@ -249,8 +249,6 @@ if __name__ == '__main__':
 
     profile_urls = []
 
-    NUM_PAGES_TO_PARSE = 1
-
     # Iterate over pages of search results
     # to collect profile urls
     for i in range(NUM_PAGES_TO_PARSE):
