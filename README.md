@@ -69,6 +69,8 @@
 
 ## Topic modeling
 
+Процесс и результаты topic modeling описаны в ноутбуке `team_8_topic_modeling.ipynb` по адресу: `mentoring/notebooks/`.
+
 ## Анализ данных
 
 КОММЕНТАРИЙ: раздел будет заполнен 5 июля.
