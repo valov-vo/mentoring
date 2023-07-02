@@ -4,6 +4,13 @@
 
 В  репозитарии собраны материалы команды Super 8 - участника хакатона по исследованию LinkedIn от Яндекс Практикума.
 
+## Стек
+
+- парсинг: `Beautiful Soup`, `Selenium` <br> 
+- предобработка данных: `ast`, `NLTK`, `NumPy`, `pandas`, `spaCy` <br> 
+- EDA: `Matplotlib`, `seaborn` <br> 
+- topic modeling: `scikit-learn`
+
 ## Техническое задание
 
 [Ссылка на техническое задание](https://disk.yandex.ru/i/yw9n8PmVr1LvNg)
