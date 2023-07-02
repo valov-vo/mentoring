@@ -4,33 +4,29 @@
 
 В  репозитарии собраны материалы команды Super 8 - участника хакатона по исследованию LinkedIn от Яндекс Практикума.
 
-## Стек
+## Задача
 
-- парсинг: `Beautiful Soup`, `Selenium` <br> 
-- предобработка данных: `ast`, `NLTK`, `NumPy`, `pandas`, `spaCy` <br> 
-- EDA: `Matplotlib`, `seaborn` <br> 
-- topic modeling: `scikit-learn`
+- **Заказчик**: сервис онлайн-образования (edTech)
+- **Общее описание задачи**: провести исследование по теме наставничества и менторства на основании постов целевой аудитории в LinkedIn
+- **Цели исследования**:
+  - определить топ-10 тем в направлении наставничества на основании наибольшего охвата, используя теги наставничество, менторство, коучинг, mentorship, mentor, coaching, buddy
+  - определить топ-10 популярных тем по просмотрам, реакциям: лайкам, комментариям, репостам среди IT-специалистов, подходящих под описание целевой аудитории исследования
+  - дополнить профили целевой аудитории новыми параметрами
+- **Тип задачи**: `кластеризация`, `парсинг` `NLP`, `topic modeling`
+- **Стек**
+  - парсинг: `Beautiful Soup`, `Selenium`
+  - предобработка данных: `ast`, `NLTK`, `NumPy`, `pandas`, `spaCy`
+  - EDA: `Matplotlib`, `seaborn`
+  - topic modeling: `scikit-learn`
+ 
+## Команда
 
-## Техническое задание
-
-[Ссылка на техническое задание](https://disk.yandex.ru/i/yw9n8PmVr1LvNg)
-
-## Состав команды
-
-### Менеджер проекта
-
-- [Александр Горлов](https://www.linkedin.com/in/alexgorlov)
-
-### Специалисты Data Science
-
-- [Валерий Валов](https://github.com/valov-vo) (дата сайентист)
-- [Кирилл Рубашевский](https://github.com/kirill-rubashevskiy) (дата сайентист)
-- [Александр Семенов](https://github.com/Ptolemey98) (дата сайентист)
-
-### IT-рекрутер
-
-- [Лидия Селеменова](https://www.linkedin.com/in/%D0%BB%D0%B8%D0%B4%D0%B8%D1%8F-%D1%81%D0%B5%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D0%B5%D0%B2%D0%B0-14488bb5)
-
+- **Менеджер проекта**: [Александр Горлов](https://www.linkedin.com/in/alexgorlov)
+- **Специалисты Data Science**:
+  - [Валерий Валов](https://github.com/valov-vo)
+  - [Кирилл Рубашевский](https://github.com/kirill-rubashevskiy)
+  - [Александр Семенов](https://github.com/Ptolemey98)
+- **IT-рекрутер**: [Лидия Селеменова](https://www.linkedin.com/in/%D0%BB%D0%B8%D0%B4%D0%B8%D1%8F-%D1%81%D0%B5%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D0%B5%D0%B2%D0%B0-14488bb5)
 
 ## Этапы работы
 
